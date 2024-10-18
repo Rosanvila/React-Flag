@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, { useEffect } from 'react';
 import Logo from "../components/Logo";
 import Navigation from "../components/Navigation";
 import axios from "axios";
@@ -11,20 +11,20 @@ const Blog = () => {
     const [author, setAuthor] = React.useState("");
     const [lastId, setLastId] = React.useState(0);
 
-const getData = async () => {
-    await axios
-        .get("http://localhost:3001/articles")
-        .then((response) => {
-            const data = response.data;
-            setBlogData(data);
-            const numericIds = data.map(article => parseInt(article.id)).filter(id => !isNaN(id));
-            setLastId(Math.max(...numericIds, 0));
-        });
-};
+    const getData = async () => {
+        await axios
+            .get("http://localhost:3001/articles")
+            .then((response) => {
+                const data = response.data;
+                setBlogData(data);
+                const numericIds = data.map(article => parseInt(article.id)).filter(id => !isNaN(id));
+                setLastId(Math.max(...numericIds, 0));
+            });
+    };
 
-useEffect(() => {
-    getData().then(r => r);
-}, []);
+    useEffect(() => {
+        getData();
+    }, []);
 
     const handle = (ev) => {
         ev.preventDefault();
@@ -43,33 +43,37 @@ useEffect(() => {
                 setError(false);
                 setContent("");
                 setAuthor("");
-                getData().then(r => r);
+                getData();
             });
         }
     };
 
+    const handleDelete = (id) => {
+        setBlogData(previousData => previousData.filter(article => article.id !== id));
+    };
+
     return (
         <div className="blog-container">
-            <Logo/>
-            <Navigation/>
+            <Logo />
+            <Navigation />
             <h1>Blog</h1>
             <form onSubmit={(ev) => handle(ev)}>
                 <input type="text" placeholder="Name"
                        onChange={(e) => (setAuthor(e.target.value))}
-                       value={author}/>
-                <textarea placeholder="Message" style={{border: error ? "1px solid red" : "1px solid #67dafb"}}
+                       value={author} />
+                <textarea placeholder="Message" style={{ border: error ? "1px solid red" : "1px solid #67dafb" }}
                           onChange={(ev) => setContent(ev.target.value)}
                           value={content}></textarea>
                 <p>
                     {error && "Your message is too short, it should be at least 140 characters long."}
                 </p>
-                <input type="submit" value="Submit"/>
+                <input type="submit" value="Submit" />
             </form>
             <ul>
                 {blogData
                     .sort((a, b) => b.date - a.date)
                     .map((article) => (
-                        <Article key={article.id} article={article}/>
+                        <Article key={article.id} article={article} onDelete={handleDelete} />
                     ))}
             </ul>
         </div>
